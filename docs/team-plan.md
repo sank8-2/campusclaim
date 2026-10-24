@@ -66,6 +66,20 @@ Compressed variant: if the showcase is under 4 hours away, run 0:00–2:30 only,
 - [ ] Backup video and screenshots in case the live demo fails
 - [ ] Bonus only if green: policy RAG with document + page citations, refusal, 15-question test
 
+## GitHub tracking
+
+Work is tracked in the [Hack Day 3B milestone](https://github.com/sank8-2/campusclaim/milestone/1):
+
+| Issue | Role | Assignee |
+|---|---|---|
+| [#1](https://github.com/sank8-2/campusclaim/issues/1) | M1 — notebook and fine-tuning | sank8-2 |
+| [#2](https://github.com/sank8-2/campusclaim/issues/2) | M2 — evaluation and metrics | preetamggoudar |
+| [#3](https://github.com/sank8-2/campusclaim/issues/3) | M3 — app and demo | itz-dark007 |
+| [#4](https://github.com/sank8-2/campusclaim/issues/4) | M4 — policy RAG bonus | unassigned |
+| [#5](https://github.com/sank8-2/campusclaim/issues/5) | M5 — slides and rehearsal | unassigned |
+
+Issues #4 and #5 need the remaining team members' GitHub handles. Until then, anyone can self-assign by commenting on the issue.
+
 ## Shared artifacts
 
 - Colab sections: `Setup`, `Data`, `Baseline`, `Fine-tune`, `Evaluation`, `App`, `RAG (optional)`, `SCRATCH`.
