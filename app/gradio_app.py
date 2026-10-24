@@ -528,6 +528,7 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
                         type="pil",
                         label="Receipt image",
                         height=360,
+                        mirror_webcam=False,
                     )
                 with gr.Column(scale=3):
                     gr.Markdown('<div class="section-title">Actions</div>')
