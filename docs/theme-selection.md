@@ -83,6 +83,10 @@ If time is constrained, complete the required 3B deliverables first. The selecte
 
 ## Showcase plan
 
+### Planned extension: Laya decision layer
+
+Use Laya, interpreted here as the open-weight decision model discussed as an alternative to Jev, to classify request intent and flag incomplete or unsupported claims. Gemma remains responsible for receipt extraction and cited explanations; deterministic code checks explicit amounts, dates, and required fields. Laya's outputs guide review, with uncertainty and model failures falling back to a person. This extension does not replace the required Gemma fine-tuning or the four-model evaluation. See the [integration plan](laya-integration.md) for architecture, interfaces, milestones, and validation criteria.
+
 Upload a held-out receipt, show plain and fine-tuned extraction side by side, correct any errors, and ask a reimbursement question. Display the policy answer and its sources. Finish with an unsupported question to demonstrate refusal, then show the extraction metrics and broader model scorecard.
 
 ## Source problem statements
