@@ -75,14 +75,18 @@ python3 scripts/check_rag_docs.py           # pypdf: text-based check on those P
 
 ## Gradio app (M3)
 
-Run the app in dummy mode (no model, no GPU, no network):
+Run the app with local OCR (no model, no GPU, no network beyond the first install):
 
 ```bash
 pip install -r requirements.txt
-python -m app.gradio_app
+python -m app.gradio_app            # --extractor ocr (default)
 ```
 
-The default uses dummy JSON so the upload → extract → edit → claim draft flow works immediately.
+The default reads the uploaded receipt with `rapidocr-onnxruntime`, so the upload → extract → edit →
+claim draft flow shows the actual text from the image. The app shows a naive baseline parse next to
+a layout-aware parse (company, date, address, total); OCR runs once per image and is reused for both.
+
+Use `--extractor dummy` for hardcoded placeholders when you only want to test the UI.
 
 To use a saved adapter state instead of a live training session:
 
