@@ -63,7 +63,7 @@ python3 scripts/freeze_eval_sample.py       # rebuild data/ (network, no images)
 - [x] App real-inference path and offline demo pipeline (dummy mode verified locally)
 - [ ] Baseline on the frozen sample (Colab GPU)
 - [ ] LoRA fine-tune and comparison (Colab GPU)
-- [ ] App and backup demo
+- [x] App screenshots and capture script (backup clips pending share links; re-record with the real adapter after CP1)
 - [ ] Policy RAG bonus (only after CP1)
 
 ## Gradio app (M3)
