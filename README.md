@@ -4,6 +4,12 @@ Receipt-to-reimbursement assistant for campus events, built on Gemma 4 vision fi
 
 Hackathon submission: **Theme 3B — Receipt Information Extraction**. Policy retrieval is kept as the 3B *"combined approach"* bonus; the Theme 1 scorecard and the Laya layer are out of scope. See [the theme decision](docs/theme-selection.md) and [the team plan](docs/team-plan.md).
 
+## Branches
+
+`dev` is the integration branch: local work, the app, the demo pipeline and CI land there first. `main` holds the submitted baseline. Push to `dev`; never push directly to `main`.
+
+The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gradio cell) run only in Colab on a T4. Everything in `scripts/` and `tests/` runs locally on the standard library.
+
 ## Repository map
 
 | Path | What it is |
@@ -11,12 +17,19 @@ Hackathon submission: **Theme 3B — Receipt Information Extraction**. Policy re
 | `notebooks/campusclaim_3b.ipynb` | The 3B working notebook. Upload it to Colab; the **shared Colab doc is the submission**. |
 | `data/sroie_test_manifest.json` | The 361 test receipts' keys and labels (no images). |
 | `data/eval_keys_seed0.json` | The frozen 100-receipt evaluation sample. |
+| `data/demo_receipt.json` | Label-only receipt fixture for the offline demo (no image data). |
 | `scripts/freeze_eval_sample.py` | Regenerates the manifest and the frozen sample from the HF rows API. |
 | `scripts/score.py` | Field-level scoring used by the notebook and the tests. |
 | `scripts/validate_notebook.py` | Pre-flight: compiles the notebook and checks the frozen keys and required cells. |
+| `scripts/demo_pipeline.py` | Offline dummy run: extract → prefill → claim draft → `results/demo_report.json`. |
+| `scripts/check.sh` | Runs the validator and the test suite from the repo root (same as CI). |
+| `app/inference.py` | Notebook-mirroring inference adapter: `build_infer_fn` and `parse_receipt_json`. |
+| `app/gradio_app.py` | Standalone app. Dummy mode by default; real adapters via `--no-dummy`. |
 | `tests/test_scoring.py` | 8 unit tests for the normalisers and scoring. |
-| `tests/test_gradio_app.py` | 7 unit tests for the app's prefill, claim draft and adapter handling. |
-| `app/gradio_app.py` | Standalone dummy-mode fallback app; the primary demo is the notebook cell. |
+| `tests/test_gradio_app.py` | 12 unit tests for prefill, claim draft, adapter handling and CLI wiring. |
+| `tests/test_inference.py` | 14 unit tests for JSON parsing, the processor/generation calls and import safety. |
+| `tests/test_demo_pipeline.py` | 5 unit tests for the demo report. |
+| `.github/workflows/ci.yml` | CI on pushes and pull requests to `dev` and `main`. |
 | `docs/team-plan.md` | Roles, timeline, checkpoints, cut lines, rubric. |
 | `docs/colab-handoff.md` | How to run the notebook and hand results to M2–M5. |
 | `docs/results.md` | Settings, metrics and failure examples (filled during the run). |
@@ -25,9 +38,11 @@ Hackathon submission: **Theme 3B — Receipt Information Extraction**. Policy re
 ## Quick checks
 
 ```bash
+bash scripts/check.sh                       # validator + tests (the same commands CI runs)
 python3 scripts/validate_notebook.py        # notebook syntax + frozen keys
+python3 -m unittest discover -s tests -v    # 40 tests, standard library only
+python3 scripts/demo_pipeline.py            # offline demo; writes results/demo_report.json
 python3 scripts/freeze_eval_sample.py       # rebuild data/ (network, no images)
-python3 -m unittest discover -s tests -v    # 16 tests
 ```
 
 ## Status
@@ -35,31 +50,53 @@ python3 -m unittest discover -s tests -v    # 16 tests
 - [x] Theme 3B confirmed, single theme
 - [x] Team roles assigned in the [Hack Day 3B milestone](https://github.com/sank8-2/campusclaim/milestone/1)
 - [x] Frozen 100-receipt evaluation sample
-- [ ] Baseline on the frozen sample
-- [ ] LoRA fine-tune and comparison
+- [x] App real-inference path and offline demo pipeline (dummy mode verified locally)
+- [ ] Baseline on the frozen sample (Colab GPU)
+- [ ] LoRA fine-tune and comparison (Colab GPU)
 - [ ] App and backup demo
 - [ ] Policy RAG bonus (only after CP1)
 
 ## Gradio app (M3)
 
-Run the baseline skeleton app:
+Run the app in dummy mode (no model, no GPU, no network):
 
 ```bash
 pip install -r requirements.txt
 python -m app.gradio_app
 ```
 
-The default run mode uses dummy JSON so the upload → extract → edit → claim draft flow works immediately.
+The default uses dummy JSON so the upload → extract → edit → claim draft flow works immediately.
 
-To use a saved adapter state (instead of a live training session), start with:
+To use a saved adapter state instead of a live training session:
 
 ```bash
-python -m app.gradio_app --no-dummy --base-model-id <base-model> --adapter-path <saved-adapter-dir>
+python -m app.gradio_app --no-dummy \
+  --base-model-id unsloth/gemma-4-E2B-it \
+  --adapter-path campusclaim_gemma4_lora
 ```
 
-Then pass your project inference callable when launching from Python so plain extraction uses `model.disable_adapter()` and tuned extraction uses the active adapter.
+`--no-dummy` loads the base model with `PeftModel`, loads the processor with `AutoProcessor`, and uses `app.inference.build_infer_fn`, which mirrors the notebook's `generate_from_image` (same instruction, chat template, image downscale and greedy decode). Plain extraction runs with `model.disable_adapter()`; tuned extraction runs with the adapter active.
 
-This standalone app is a **fallback skeleton**. The primary demo is the Gradio cell in the notebook. The `--no-dummy` path still needs a real `infer_fn`; until that is wired, the app only runs in dummy mode.
+To plug in a project-specific inference callable, pass a factory as `module:function`. It is called with `(model, processor)` and must return a callable `(model, image) -> dict`:
+
+```bash
+python -m app.gradio_app --no-dummy \
+  --base-model-id unsloth/gemma-4-E2B-it \
+  --adapter-path campusclaim_gemma4_lora \
+  --inference-module my_project.inference:build_infer
+```
+
+`--no-dummy` without `--base-model-id` and `--adapter-path` fails before launch with a clear `ValueError`.
+
+This standalone app is a **fallback** for the demo; the primary demo is the Gradio cell in the notebook. The GPU cells still run in Colab — this repo's checks and the demo pipeline stay CPU-only.
+
+## Offline demo
+
+```bash
+python3 scripts/demo_pipeline.py
+```
+
+Runs the same service → extract → prefill → claim draft path as the app using the dummy extractors and `data/demo_receipt.json`, prints a summary, and writes `results/demo_report.json`. It is the dry run to do before recording the backup clip.
 
 Screenshot checklist: `screenshots/README.md`  
 Demo and backup clip checklist: `docs/demo-script.md`

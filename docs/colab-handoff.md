@@ -2,6 +2,10 @@
 
 The **shared Colab notebook is the submission**. `notebooks/campusclaim_3b.ipynb` in this repo is the versioned copy — do not treat the repo copy as the deliverable.
 
+`dev` is the integration branch for this repo: local app changes, tests and CI land on `dev` first, and `main` holds the submitted baseline. Do not push to `main` directly.
+
+GPU work stays in Colab. The install cell, model load, LoRA training, evaluation and the notebook's Gradio cell all need a T4 and are **not** runnable in this checkout. The local checks (`bash scripts/check.sh`) and the offline demo (`python3 scripts/demo_pipeline.py`) are CPU-only and must stay green before you upload the notebook.
+
 Before uploading, run `python3 scripts/validate_notebook.py`. If a cell fails in Colab, check [troubleshooting.md](troubleshooting.md) before changing the notebook.
 
 ## M1: first run
