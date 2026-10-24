@@ -4,6 +4,16 @@ Receipt-to-reimbursement assistant for campus events, built on Gemma 4 vision fi
 
 Hackathon submission: **Theme 3B — Receipt Information Extraction**. Policy retrieval is kept as the 3B *"combined approach"* bonus; the Theme 1 scorecard and the Laya layer are out of scope. See [the theme decision](docs/theme-selection.md) and [the team plan](docs/team-plan.md).
 
+## Dataset
+
+[`jsdnrs/ICDAR2019-SROIE`](https://huggingface.co/datasets/jsdnrs/ICDAR2019-SROIE) — ICDAR 2019 SROIE receipts, **CC-BY-4.0**.
+
+- 987 rows: **626 train**, **361 test**.
+- Fields: `image`, `key`, `image_size`, `entities` (`company`, `date`, `address`, `total`), `words`, `bboxes`.
+- Training uses `image` + `entities`; `words` and `bboxes` are unused (they would make an OCR baseline, not vision fine-tuning).
+- One train row has an empty `total`, so **625 of 626** are usable; all **361 test** rows are usable.
+- The receipts are Malaysian, so the SROIE score is not a campus-receipt score. Real campus receipts are reported separately in [results.md](docs/results.md).
+
 ## Branches
 
 `dev` is the integration branch: local work, the app, the demo pipeline and CI land there first. `main` holds the submitted baseline. Push to `dev`; never push directly to `main`.
