@@ -58,6 +58,8 @@ python3 scripts/validate_notebook.py        # notebook syntax + frozen keys
 python3 -m unittest discover -s tests -v    # 40 tests, standard library only
 python3 scripts/demo_pipeline.py            # offline demo; writes results/demo_report.json
 python3 scripts/freeze_eval_sample.py       # rebuild data/ (network, no images)
+python3 scripts/fetch_rag_docs.py           # download the git-ignored policy PDFs
+python3 scripts/check_rag_docs.py           # pypdf: text-based check on those PDFs
 ```
 
 ## Status

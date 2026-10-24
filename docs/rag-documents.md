@@ -38,9 +38,13 @@ Documents considered and dropped:
 `scripts/check_rag_docs.py` opens each PDF with `pypdf`, counts extractable characters per page, and flags pages below 200 characters:
 
 ```bash
-python -m pip install pypdf
+python -m pip install -r requirements.txt
+python scripts/fetch_rag_docs.py
 python scripts/check_rag_docs.py
 ```
+
+`fetch_rag_docs.py` downloads both PDFs into the git-ignored `data/rag/source/` and verifies the
+SHA-256 checksums above; re-run it with `--force` if a document changes upstream.
 
 Result on the checked copies:
 
