@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 results/demo_report.json
+screenshots/*.webm
+screenshots/_video_raw/
