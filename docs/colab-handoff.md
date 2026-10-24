@@ -10,11 +10,17 @@ Before uploading, run `python3 scripts/validate_notebook.py`. If a cell fails in
 
 ## M1: first run
 
+The notebook is now split into a smoke test and the expensive run. Do not run the 100-receipt baseline or training until the smoke test prints JSON.
+
 1. Open the [Theme 3 starter](https://colab.research.google.com/github/mithun-srinivas/HacktoberFest-HackDay/blob/main/templates/03_fine_tuning_starter_kit.ipynb), choose *File → Save a copy in Drive*, and rename it `CampusClaim 3B`.
 2. Upload `notebooks/campusclaim_3b.ipynb` with *File → Upload notebook*, or paste its cells into the shared doc.
 3. Set *Runtime → Change runtime type → T4 GPU*.
-4. Run every cell top to bottom. The install cell takes 2–4 minutes.
-5. At the end, download `results/` and `campusclaim_gemma4_lora.zip` from the Colab file browser, then commit the results to this repo (or hand them to M2).
+4. Run the install cell (2–4 minutes), then the GPU check and the model-load cell. The model-load cell prints `Unsloth: Using float16 precision for gemma4 won't work! Using float32.` — that is expected on a T4, not an error.
+5. Run the dataset cell and the one-receipt smoke test only. The smoke test should print the receipt key, the expected fields, and a JSON prediction.
+6. If the smoke test prints JSON, run the baseline, the LoRA cell, training, the fine-tuned evaluation, the failure table, and the export cell. If the runtime restarts instead, stop and use [troubleshooting.md](troubleshooting.md); do not re-run the model-load cell after a crash.
+7. Download `results/` and `campusclaim_gemma4_lora.zip` from the Colab file browser, then commit the results to this repo (or hand them to M2).
+
+The training cell builds a HF `Dataset` of row indices and applies `with_transform` to produce `messages` and `images` one batch at a time. Do not replace this with a Python list, `Dataset.from_list` of all conversations, or a `torch.utils.data.Dataset`.
 
 ## Handoffs
 

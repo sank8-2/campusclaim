@@ -34,9 +34,11 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `scripts/demo_pipeline.py` | Offline dummy run: extract → prefill → claim draft → `results/demo_report.json`. |
 | `scripts/check.sh` | Runs the validator and the test suite from the repo root (same as CI). |
 | `app/inference.py` | Notebook-mirroring inference adapter: `build_infer_fn` and `parse_receipt_json`. |
-| `app/gradio_app.py` | Standalone app. Dummy mode by default; real adapters via `--no-dummy`. |
+| `app/gradio_app.py` | Standalone app. Local OCR by default; `--extractor dummy` or `--no-dummy` + adapter. |
+| `app/ocr_extract.py` | RapidOCR helpers for the fallback app (naive vs layout-aware parse). |
 | `tests/test_scoring.py` | 8 unit tests for the normalisers and scoring. |
-| `tests/test_gradio_app.py` | 12 unit tests for prefill, claim draft, adapter handling and CLI wiring. |
+| `tests/test_gradio_app.py` | Unit tests for prefill, claim draft, adapter handling and CLI wiring. |
+| `tests/test_ocr_extract.py` | Unit tests for OCR field parsing. |
 | `tests/test_inference.py` | 14 unit tests for JSON parsing, the processor/generation calls and import safety. |
 | `tests/test_demo_pipeline.py` | 5 unit tests for the demo report. |
 | `.github/workflows/ci.yml` | CI on pushes and pull requests to `dev` and `main`. |

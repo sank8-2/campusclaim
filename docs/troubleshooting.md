@@ -21,12 +21,42 @@ If a cell fails in Colab, match the error below before changing the notebook.
 - Use `get_chat_template(processor, "gemma-4")` and `UnslothVisionDataCollator(model, processor)` as the notebook does.
 - Do not call `processor.tokenizer`.
 
+## `NameError: name 'INSTRUCTION' is not defined`
+
+- The conversation cell needs the extraction prompt. Re-run that cell from the patched notebook (it defines `INSTRUCTION` locally), or re-run the model-load cell first so the name exists in the kernel.
+
+## `Your session crashed after using all available RAM` (system RAM, not GPU)
+
+Colab's free runtime has ~12.7 GB of **system** RAM. Kernel restarts at the dataset or training cell with debugger/`frozen modules` noise in the runtime logs are almost always this, not a Python exception.
+
+Cause: decoding every SROIE image into a Python list before training. The notebook must keep images lazy:
+
+- Filter on `key` / `entities` only (`select_columns`), never iterate the image column to build lists.
+- Eval uses `LazyRows` (one decode per access).
+- Training uses a HF `Dataset` of row indices plus `with_transform` that yields `messages` (image placeholder) and `images` (one PIL per row) only when the collator asks. Do **not** use `torch.utils.data.Dataset` (TRL 1.x rejects it) and do **not** `Dataset.from_list([to_conversation(...) for ...])` — that decodes all 625 receipts before Arrow can help.
+- `MAX_IMAGE_SIDE = 1024` and `dataloader_num_workers = 0`.
+- The conversation cell defines `INSTRUCTION` itself so a partial re-run after a restart does not raise `NameError`.
+
+If the restart happens while building the training set, confirm the cell uses `with_transform` (not a full `from_list` of conversations). If it still restarts, lower `MAX_IMAGE_SIDE` to 800 and rerun from the dataset cell.
+
+After a crash: **Runtime → Disconnect and delete runtime**, upload the patched notebook, then run from the install cell again. The HF Hub "unauthenticated requests" warning is unrelated; a token only helps rate limits.
+
+## `Unsloth: Using float16 precision for gemma4 won't work! Using float32.`
+
+This warning is expected on a T4, not a bug. Unsloth forces float32 for Gemma 4 because float16 produces NaN gradients. Do not set `dtype=torch.float16` or `torch_dtype=torch.float16` to silence it; the run will diverge.
+
+Consequences on a free T4 (16 GB VRAM, ~12.7 GB system RAM):
+
+- Keep `MAX_IMAGE_SIDE = 1024`, `BATCH_SIZE = 1`, `GRAD_ACCUM = 4`.
+- If it still runs out of GPU memory, set `LORA_RANK = 8` and/or `finetune_vision_layers = False`.
+- A bf16 GPU (A100/L4) or a Kaggle 2×T4 runtime with 30 GB system RAM is the robust alternative. If you switch, record it in `results/settings.json` and `docs/results.md`.
+
 ## `CUDA out of memory`
 
 Try these in order, restarting the runtime after each:
 
 1. **Runtime → Restart runtime**, then run from the top.
-2. Set `MAX_IMAGE_SIDE = 1024` (from 1600) in the dataset cell.
+2. Confirm `MAX_IMAGE_SIDE = 1024` in the dataset cell (not 1600).
 3. Set `LORA_RANK = 8` (from 16) in the LoRA cell.
 4. Keep `BATCH_SIZE = 1` and `GRAD_ACCUM = 4`.
 5. If it still runs out, set `finetune_vision_layers = False` and keep the language layers trainable.

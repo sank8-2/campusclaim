@@ -20,7 +20,7 @@ INSTRUCTION = (
     "Reply with JSON only."
 )
 
-MAX_IMAGE_SIDE = 1600
+MAX_IMAGE_SIDE = 1024
 
 
 def parse_receipt_json(text: str) -> Dict[str, Any]:
