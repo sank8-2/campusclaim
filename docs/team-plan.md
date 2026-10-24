@@ -75,10 +75,8 @@ Work is tracked in the [Hack Day 3B milestone](https://github.com/sank8-2/campus
 | [#1](https://github.com/sank8-2/campusclaim/issues/1) | M1 — notebook and fine-tuning | sank8-2 |
 | [#2](https://github.com/sank8-2/campusclaim/issues/2) | M2 — evaluation and metrics | preetamggoudar |
 | [#3](https://github.com/sank8-2/campusclaim/issues/3) | M3 — app and demo | itz-dark007 |
-| [#4](https://github.com/sank8-2/campusclaim/issues/4) | M4 — policy RAG bonus | jtffnh (invite pending) |
-| [#5](https://github.com/sank8-2/campusclaim/issues/5) | M5 — slides and rehearsal | gouthug87-prog (invite pending) |
-
-`jtffnh` and `gouthug87-prog` have pending write invitations. GitHub only accepts an issue assignee after the invitation is accepted, so #4 and #5 will be assigned as soon as they accept.
+| [#4](https://github.com/sank8-2/campusclaim/issues/4) | M4 — policy RAG bonus | jtffnh |
+| [#5](https://github.com/sank8-2/campusclaim/issues/5) | M5 — slides and rehearsal | gouthug87-prog |
 
 ## Shared artifacts
 
