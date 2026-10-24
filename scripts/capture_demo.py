@@ -1,10 +1,16 @@
 """Drive the CampusClaim Gradio app in Chrome to capture screenshots and backup clips.
 
+Setup:
+    python -m pip install playwright
+    python -m playwright install chrome
+
 Usage:
     python scripts/capture_demo.py --url http://127.0.0.1:7861
 
-Requires the app to already be running (dummy mode is fine).
+Requires the app to already be running (dummy mode is fine); stop it afterwards.
 Writes the four showcase screenshots and two .webm backup clips into screenshots/.
+The .webm files are git-ignored: upload them to Drive and link them from
+docs/demo-script.md rather than committing them.
 
 The canonical screenshots (01-04) are captured on the first baseline pass. The
 baseline and final clips each run the full flow end to end, with configurable
@@ -96,6 +102,7 @@ def run_flow(page, *, pause_ms: int = 2500, capture: bool = False, tag: str = ""
 
 
 def _record(browser, url, *, runs, pause_ms, video_dir, tag_prefix, capture_first):
+    video_dir.mkdir(parents=True, exist_ok=True)
     ctx = browser.new_context(
         viewport={"width": 1280, "height": 900},
         record_video_dir=str(video_dir),
