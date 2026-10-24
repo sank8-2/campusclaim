@@ -21,6 +21,10 @@ If a cell fails in Colab, match the error below before changing the notebook.
 - Use `get_chat_template(processor, "gemma-4")` and `UnslothVisionDataCollator(model, processor)` as the notebook does.
 - Do not call `processor.tokenizer`.
 
+## `NameError: name 'INSTRUCTION' is not defined`
+
+- The conversation cell needs the extraction prompt. Re-run that cell from the patched notebook (it defines `INSTRUCTION` locally), or re-run the model-load cell first so the name exists in the kernel.
+
 ## `Your session crashed after using all available RAM` (system RAM, not GPU)
 
 Colab's free runtime has ~12.7 GB of **system** RAM. Kernel restarts at the dataset or training cell with debugger/`frozen modules` noise in the runtime logs are almost always this, not a Python exception.
@@ -29,10 +33,11 @@ Cause: decoding every SROIE image into a Python list before training. The notebo
 
 - Filter on `key` / `entities` only (`select_columns`), never iterate the image column to build lists.
 - Eval uses `LazyRows` (one decode per access).
-- Training builds a `datasets.Dataset` with two columns: `messages` (text plus an image placeholder) and `images` (a one-image list). `datasets` stores the image bytes in Arrow, so only the current batch is decoded when `UnslothVisionDataCollator` runs. Do **not** wrap this in `torch.utils.data.Dataset` — TRL 1.x rejects it, and do not pass a plain Python list.
+- Training uses a HF `Dataset` of row indices plus `with_transform` that yields `messages` (image placeholder) and `images` (one PIL per row) only when the collator asks. Do **not** use `torch.utils.data.Dataset` (TRL 1.x rejects it) and do **not** `Dataset.from_list([to_conversation(...) for ...])` — that decodes all 625 receipts before Arrow can help.
 - `MAX_IMAGE_SIDE = 1024` and `dataloader_num_workers = 0`.
+- The conversation cell defines `INSTRUCTION` itself so a partial re-run after a restart does not raise `NameError`.
 
-If the restart happens in the dataset cell, check that the cell uses `Dataset.from_list(...)` with the `messages` / `images` columns. If it still restarts, lower `MAX_IMAGE_SIDE` to 800 and rerun from the dataset cell.
+If the restart happens while building the training set, confirm the cell uses `with_transform` (not a full `from_list` of conversations). If it still restarts, lower `MAX_IMAGE_SIDE` to 800 and rerun from the dataset cell.
 
 After a crash: **Runtime → Disconnect and delete runtime**, upload the patched notebook, then run from the install cell again. The HF Hub "unauthenticated requests" warning is unrelated; a token only helps rate limits.
 

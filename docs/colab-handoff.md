@@ -20,7 +20,7 @@ The notebook is now split into a smoke test and the expensive run. Do not run th
 6. If the smoke test prints JSON, run the baseline, the LoRA cell, training, the fine-tuned evaluation, the failure table, and the export cell. If the runtime restarts instead, stop and use [troubleshooting.md](troubleshooting.md); do not re-run the model-load cell after a crash.
 7. Download `results/` and `campusclaim_gemma4_lora.zip` from the Colab file browser, then commit the results to this repo (or hand them to M2).
 
-The training cell builds a `datasets.Dataset` with `messages` and `images` columns. The image bytes stay encoded in Arrow and are decoded one batch at a time; do not replace this with a Python list or a `torch.utils.data.Dataset`.
+The training cell builds a HF `Dataset` of row indices and applies `with_transform` to produce `messages` and `images` one batch at a time. Do not replace this with a Python list, `Dataset.from_list` of all conversations, or a `torch.utils.data.Dataset`.
 
 ## Handoffs
 
