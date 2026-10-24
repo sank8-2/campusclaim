@@ -1,0 +1,8 @@
+{
+  "valid JSON":100.0,
+  "company exact":79.0,
+  "date exact":85.0,
+  "address exact":60.0,
+  "total exact":90.0,
+  "address token-F1":89.3
+}

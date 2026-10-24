@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import csv
+import json
 from pathlib import Path
 
 from pptx import Presentation
@@ -14,6 +16,44 @@ from pptx.util import Inches, Pt, Emu
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "CampusClaim_Notebook_Walkthrough.pptx"
 SCREENSHOTS = ROOT / "screenshots"
+RESULTS = ROOT / "results"
+COMPARISON_CSV = RESULTS / "comparison.csv"
+SETTINGS_JSON = RESULTS / "settings.json"
+
+
+def load_settings() -> dict:
+    if not SETTINGS_JSON.exists():
+        return {}
+    return json.loads(SETTINGS_JSON.read_text())
+
+
+def load_comparison_rows() -> list[list[str]]:
+    """Return metric table rows from results/comparison.csv."""
+    labels = {
+        "valid JSON": "Valid JSON",
+        "company exact": "Company exact",
+        "date exact": "Date exact",
+        "address exact": "Address exact",
+        "total exact": "Total exact",
+        "address token-F1": "Address token-F1",
+    }
+    if not COMPARISON_CSV.exists():
+        return [[label, "—", "—", "—"] for label in labels.values()]
+
+    rows: list[list[str]] = []
+    with COMPARISON_CSV.open(newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader)
+        # CSV starts with a leading comma: "",Plain Gemma (%),...
+        for cells in reader:
+            if not cells or not cells[0].strip():
+                continue
+            metric_key = cells[0].strip()
+            plain_v, tuned_v, change_v = float(cells[1]), float(cells[2]), float(cells[3])
+            label = labels.get(metric_key, metric_key)
+            change_s = f"{change_v:+.1f}" if change_v != 0 else "0.0"
+            rows.append([label, f"{plain_v:.1f}%", f"{tuned_v:.1f}%", change_s])
+    return rows
 
 # Campus / receipt-desk visual direction (avoid purple / cream-serif / broadsheet clichés)
 NAVY = RGBColor(0x0F, 0x2C, 0x3C)
@@ -151,8 +191,8 @@ def build() -> Path:
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
-
-    slides_meta: list[tuple] = []  # filled after we know count via two-pass; instead append then footer
+    settings = load_settings()
+    comparison_rows = load_comparison_rows()
 
     built = []
 
@@ -392,18 +432,25 @@ def build() -> Path:
     built.append(s)
 
     # 14 LoRA
+    rank = settings.get("lora_rank", 16)
+    steps = settings.get("train_steps", 120)
+    lr = settings.get("learning_rate", 2e-4)
+    batch = settings.get("batch_size", 1)
+    accum = settings.get("grad_accum", 4)
+    max_len = settings.get("max_length", 2048)
+    img_side = settings.get("image_max_side", 1024)
     s = _new(
         prs,
         title="Step 4 — LoRA fine-tuning",
-        subtitle="Vision layers are trained because the task is reading the receipt",
+        subtitle="Settings locked in results/settings.json from the Colab run",
         bullets=[
-            "FastVisionModel.get_peft_model · r = alpha = 16 · dropout 0 · all-linear targets",
-            "finetune_vision_layers = True (and language / attention / MLP)",
-            "SFTTrainer + UnslothVisionDataCollator · processing_class = processor",
-            "120 steps ≈ 0.75 epoch over 625 usable train receipts",
-            "LR 2e-4 · batch 1 · grad accum 4 · max_length 2048 · adamw_8bit · cosine schedule",
-            "skip_prepare_dataset=True · remove_unused_columns=False",
-            "OOM fallbacks: LORA_RANK=8 · finetune_vision_layers=False · MAX_IMAGE_SIDE=800",
+            f"Model: {settings.get('model', 'unsloth/gemma-4-E2B-it')} · 4-bit · float32 on T4",
+            f"LoRA rank / alpha = {rank} · finetune_vision_layers = True · all-linear targets",
+            f"{steps} steps ≈ 0.75 epoch over 625 usable train receipts",
+            f"LR {lr} · batch {batch} · grad accum {accum} · max_length {max_len}",
+            f"MAX_IMAGE_SIDE = {img_side} · UnslothVisionDataCollator · processing_class = processor",
+            "Adapters saved to adapters/campusclaim_gemma4_lora/",
+            "OOM fallbacks (not used this run): rank 8 · freeze vision · image side 800",
         ],
     )
     built.append(s)
@@ -412,33 +459,26 @@ def build() -> Path:
     s = _new(
         prs,
         title="Step 5 — Fine-tuned eval & comparison",
-        subtitle="Same receipts · same instruction · same scorers",
+        subtitle=f"Same {settings.get('eval_keys', 100)} receipts · seed {settings.get('eval_seed', 0)} · same instruction",
         bullets=[
             "tuned_records = evaluate_vision(eval_rows, \"fine_tuned_model\")",
             "comparison table: Plain % · Fine-tuned % · Change (points)",
-            "Failure table: receipts with any wrong field among company/date/address/total",
-            "Show where fine-tuning helped and where it did not — no invented wins",
-            "Exact address is strict; always show token-F1 beside it",
+            "33 of 100 receipts still had ≥1 wrong field — address exact remains hardest",
+            "Biggest gains: address exact +19.0 · date exact +11.0 · address token-F1 +7.1",
+            "Valid JSON stayed at 100% for both models",
         ],
     )
     built.append(s)
 
-    # 16 Metrics placeholder
+    # 16 Metrics from comparison.csv
     s = _new(
         prs,
-        title="Metrics slide (fill from results/)",
-        subtitle="Numbers come only from comparison.csv after the Colab run — never invent them",
+        title="Evidence — plain vs fine-tuned",
+        subtitle="Copied from results/comparison.csv · 100 frozen SROIE test receipts",
     )
     headers = ["Metric", "Plain Gemma", "Fine-tuned", "Change"]
-    rows = [
-        ["Valid JSON", "—", "—", "—"],
-        ["Company exact", "—", "—", "—"],
-        ["Date exact", "—", "—", "—"],
-        ["Address exact", "—", "—", "—"],
-        ["Total exact", "—", "—", "—"],
-        ["Address token-F1", "—", "—", "—"],
-    ]
-    table = s.shapes.add_table(len(rows) + 1, 4, Inches(1.2), Inches(1.7), Inches(10.8), Inches(4.2)).table
+    rows = comparison_rows
+    table = s.shapes.add_table(len(rows) + 1, 4, Inches(1.2), Inches(1.55), Inches(10.8), Inches(4.0)).table
     for c, h in enumerate(headers):
         cell = table.cell(0, c)
         cell.text = h
@@ -446,35 +486,58 @@ def build() -> Path:
             for run in p.runs:
                 _set_run(run, size=13, bold=True, color=WHITE)
         cell.fill.solid()
-        cell.fill.fore_color.rgb = NAVY
+        cell.fill.fore_color.rgb = NAVY if c != 2 else ACCENT
     for r, row in enumerate(rows, start=1):
         for c, val in enumerate(row):
             cell = table.cell(r, c)
             cell.text = val
             for p in cell.text_frame.paragraphs:
                 for run in p.runs:
-                    _set_run(run, size=13, color=INK)
+                    _set_run(run, size=13, color=INK, bold=(c == 3 and str(val).startswith("+")))
             cell.fill.solid()
             cell.fill.fore_color.rgb = WHITE if r % 2 else CARD
-    note = s.shapes.add_textbox(Inches(1.2), Inches(6.1), Inches(10.8), Inches(0.6))
-    np = note.text_frame.paragraphs[0]
-    nr = np.add_run()
-    nr.text = "After export: copy from results/comparison.csv. M2 owns verification before the deck goes final."
-    _set_run(nr, size=12, color=ACCENT)
+    note = s.shapes.add_textbox(Inches(1.2), Inches(5.75), Inches(10.8), Inches(0.9))
+    tf = note.text_frame
+    tf.word_wrap = True
+    p0 = tf.paragraphs[0]
+    r0 = p0.add_run()
+    r0.text = "FAILURE 01 — Wrong total blocks approval  ·  e.g. X51006008090 expected 30.50 → predicted 30.48"
+    _set_run(r0, size=12, color=ACCENT)
+    p1 = tf.add_paragraph()
+    r1 = p1.add_run()
+    r1.text = "FAILURE 02 — Plausible company still wrong  ·  e.g. TEO HENG → TED HENG (OCR-style typo)"
+    _set_run(r1, size=12, color=MUTED)
+    built.append(s)
+
+    # 16b Run parameters
+    s = _new(
+        prs,
+        title="Run parameters (settings.json)",
+        subtitle="Locked hyperparameters for the submitted Colab run",
+        bullets=[
+            f"model: {settings.get('model', '—')}",
+            f"instruction: {settings.get('instruction', '—')}",
+            f"eval_keys: {settings.get('eval_keys', '—')} · eval_seed: {settings.get('eval_seed', '—')}",
+            f"image_max_side: {settings.get('image_max_side', '—')}",
+            f"lora_rank: {settings.get('lora_rank', '—')} · train_steps: {settings.get('train_steps', '—')}",
+            f"learning_rate: {settings.get('learning_rate', '—')} · batch_size: {settings.get('batch_size', '—')} · grad_accum: {settings.get('grad_accum', '—')}",
+            f"max_length: {settings.get('max_length', '—')}",
+            "Artifacts: results/ · adapters/campusclaim_gemma4_lora/",
+        ],
+    )
     built.append(s)
 
     # 17 Exports
     s = _new(
         prs,
-        title="Exports for M2 / M5",
-        subtitle="results/ folder written by the notebook export cell",
+        title="Artifacts now in the repo",
+        subtitle="Committed from the finished Colab download",
         bullets=[
-            "baseline_metrics.json · tuned_metrics.json",
-            "comparison.csv · failures.csv",
-            "baseline_predictions.csv · tuned_predictions.csv",
-            "settings.json — model, instruction, eval size/seed, image side, LoRA, steps, LR, batch",
-            "Download the whole results/ folder from the Colab file browser",
-            "Also download campusclaim_gemma4_lora.zip immediately after training",
+            "results/comparison.csv · failures.csv · predictions · metrics · settings.json",
+            "adapters/campusclaim_gemma4_lora/ (adapter_model.safetensors via Git LFS)",
+            "docs/results.md filled with the same numbers as the deck",
+            "Reload: python -m app.gradio_app --no-dummy --base-model-id unsloth/gemma-4-E2B-it \\",
+            "  --adapter-path adapters/campusclaim_gemma4_lora",
         ],
     )
     built.append(s)
