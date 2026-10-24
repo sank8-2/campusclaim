@@ -34,9 +34,11 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `scripts/demo_pipeline.py` | Offline dummy run: extract → prefill → claim draft → `results/demo_report.json`. |
 | `scripts/check.sh` | Runs the validator and the test suite from the repo root (same as CI). |
 | `app/inference.py` | Notebook-mirroring inference adapter: `build_infer_fn` and `parse_receipt_json`. |
-| `app/gradio_app.py` | Standalone app. Dummy mode by default; real adapters via `--no-dummy`. |
+| `app/gradio_app.py` | Standalone app. Local OCR by default; `--extractor dummy` or `--no-dummy` + adapter. |
+| `app/ocr_extract.py` | RapidOCR helpers for the fallback app (naive vs layout-aware parse). |
 | `tests/test_scoring.py` | 8 unit tests for the normalisers and scoring. |
-| `tests/test_gradio_app.py` | 12 unit tests for prefill, claim draft, adapter handling and CLI wiring. |
+| `tests/test_gradio_app.py` | Unit tests for prefill, claim draft, adapter handling and CLI wiring. |
+| `tests/test_ocr_extract.py` | Unit tests for OCR field parsing. |
 | `tests/test_inference.py` | 14 unit tests for JSON parsing, the processor/generation calls and import safety. |
 | `tests/test_demo_pipeline.py` | 5 unit tests for the demo report. |
 | `.github/workflows/ci.yml` | CI on pushes and pull requests to `dev` and `main`. |
@@ -48,7 +50,6 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `docs/team-plan.md` | Roles, timeline, checkpoints, cut lines, rubric. |
 | `docs/colab-handoff.md` | How to run the notebook and hand results to M2–M5. |
 | `docs/results.md` | Settings, metrics and failure examples (filled during the run). |
-| `docs/status.md` | Snapshot of what is built, verified, blocked and next. |
 | `docs/troubleshooting.md` | Common Colab failures and the OOM fallback. |
 
 ## Quick checks
@@ -76,14 +77,18 @@ python3 scripts/check_rag_docs.py           # pypdf: text-based check on those P
 
 ## Gradio app (M3)
 
-Run the app in dummy mode (no model, no GPU, no network):
+Run the app with local OCR (no model, no GPU, no network beyond the first install):
 
 ```bash
 pip install -r requirements.txt
-python -m app.gradio_app
+python -m app.gradio_app            # --extractor ocr (default)
 ```
 
-The default uses dummy JSON so the upload → extract → edit → claim draft flow works immediately.
+The default reads the uploaded receipt with `rapidocr-onnxruntime`, so the upload → extract → edit →
+claim draft flow shows the actual text from the image. The app shows a naive baseline parse next to
+a layout-aware parse (company, date, address, total); OCR runs once per image and is reused for both.
+
+Use `--extractor dummy` for hardcoded placeholders when you only want to test the UI.
 
 To use a saved adapter state instead of a live training session:
 
