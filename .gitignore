@@ -4,3 +4,5 @@ __pycache__/
 results/demo_report.json
 screenshots/*.webm
 screenshots/_video_raw/
+data/rag/source/
+data/rag/text/

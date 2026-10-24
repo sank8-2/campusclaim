@@ -1,0 +1,327 @@
+{
+  "schema_version": 1,
+  "created": "2026-10-24",
+  "issue": "https://github.com/sank8-2/campusclaim/issues/4",
+  "status": "draft-not-run",
+  "documents": {
+    "snu-reimb": {
+      "title": "Policy for Reimbursement of Expenditure by Students on University Events (V1)",
+      "institution": "Shiv Nadar Institution of Eminence",
+      "url": "https://snu.edu.in/site/assets/files/16669/reimburesement_policy_for_students.pdf",
+      "pages": 8
+    },
+    "iiitu-sac": {
+      "title": "Student Activity Council Policy",
+      "institution": "Indian Institute of Information Technology Una",
+      "url": "https://iiitu.ac.in/assets/IIITUna-Student-Activity-Council-Policy-URsaLXRv.pdf",
+      "pages": 15
+    }
+  },
+  "scoring": {
+    "covered": "Correct only if the answer states every must_include fact and cites the document and PDF page. A correct fact with a wrong page counts as incorrect.",
+    "uncovered": "Correct only if the system refuses, states no rule or amount, and does not invent a policy. Suggesting the office named in the documents is recorded separately.",
+    "citation_accuracy": "Share of answers whose document and PDF page citation matches this file.",
+    "invented_policy": "Count of answers that assert a rule, limit, rate or penalty absent from both documents. Must be 0.",
+    "page_numbers": "PDF page index, not the printed page label."
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "question": "Our club wants to run an event. Who has to approve it before we start spending?",
+      "kind": "covered",
+      "expected_answer": "For clubs and societies, approval comes from the Associate Dean - Student Engagement, the Student Council and the Cultural Committee. After the Associate Dean approves, the organisers email the Cultural Committee and Student Council with the event name, date, time, venue and a short description. University-wide events such as Surge, Freshers Night, Breeze or a three-day interfest need the Dean of Students.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 3,
+          "quote": "The Associate Dean -Student Engagement, Student Council and the Cultural Committee for all clubs and societies events."
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 3,
+          "quote": "The Dean of Students for events like Surge, Freshers Night, Breeze, Three Day interfest and other University wide events."
+        }
+      ],
+      "must_include": [
+        "Associate Dean - Student Engagement",
+        "Student Council",
+        "Cultural Committee",
+        "Dean of Students for university-wide events"
+      ]
+    },
+    {
+      "id": "q02",
+      "question": "How early do we send the logistics and budget email, and who receives it?",
+      "kind": "covered",
+      "expected_answer": "Seven days before the event. Send it to the Secretary of Treasury for club and society events, or to the Student Affairs Coordinator for university-wide events. It must cover logistics such as setup, technical equipment, participant arrangements and hostel bookings, plus a detailed budget with projected expenses, income and sponsorship.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 4,
+          "quote": "seven days prior to the event"
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 4,
+          "quote": "Secretary of Treasury (for clubs and societies events) or Student Affairs Coordinator (for University wide events)"
+        }
+      ],
+      "must_include": [
+        "seven days before the event",
+        "Secretary of Treasury for clubs and societies",
+        "Student Affairs Coordinator for university-wide events"
+      ]
+    },
+    {
+      "id": "q03",
+      "question": "What is the deadline to submit bills after the event, and what goes in the email?",
+      "kind": "covered",
+      "expected_answer": "Within seven days after the event, email the Secretary of Treasury (clubs and societies) or the Student Affairs Coordinator (university-wide). Attach the complete original bills and receipts within the approved limit, the event report in the provided format, the reimbursement amount, and the club treasurer's bank details for the transfer.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 5,
+          "quote": "within seven days after the event to initiate the reimbursement process"
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 5,
+          "quote": "complete original bills, receipts, related to event expenses"
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 5,
+          "quote": "along with the event report"
+        }
+      ],
+      "must_include": [
+        "within seven days after the event",
+        "original bills and receipts",
+        "event report",
+        "club treasurer's bank details"
+      ]
+    },
+    {
+      "id": "q04",
+      "question": "What details must a bill carry, and can we submit handwritten bills?",
+      "kind": "covered",
+      "expected_answer": "A bill must show the GST number, the vendor's full legal name, stamp, phone number and PAN number. Handwritten bills are not accepted. Bills from e-commerce sites and app-based taxis are preferred, and only bills dated on or after the event approval are accepted.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "must clearly display with the Goods and Services Tax (GST) number. Handwritten bills will no longer be accepted."
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "All bills should have the vendor's name, stamp, phone number, and PAN number."
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "Only bills from the date of approval of the event will be accepted."
+        }
+      ],
+      "must_include": [
+        "GST number",
+        "vendor name, stamp, phone and PAN",
+        "handwritten bills not accepted",
+        "bills dated on or after approval"
+      ]
+    },
+    {
+      "id": "q05",
+      "question": "We are attending an external event. Can we claim food?",
+      "kind": "covered",
+      "expected_answer": "No. Students are not eligible for food reimbursement for any external event. Registration fees for approved external events are reimbursed, and transport must be arranged responsibly, preferably by Ola or Uber.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "Students are not eligible for food reimbursement for any external events."
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "Registration fees for approved external events will be reimbursed."
+        }
+      ],
+      "must_include": [
+        "no food reimbursement for external events",
+        "registration fees are reimbursed"
+      ]
+    },
+    {
+      "id": "q06",
+      "question": "If our bills fall in the 16th to 30th cycle, when is the money credited?",
+      "kind": "covered",
+      "expected_answer": "The second reimbursement cycle covers days 16 to 30 or 31 and is processed by the 15th day of the next month. The first cycle, days 1 to 15, is processed by the last working day of the same month.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 6,
+          "quote": "the second reimbursement cycle (16-30/31 day) will be processed by the 15th day of next month"
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 6,
+          "quote": "first reimbursement cycle (1-15 day) will be processed by the last working day of the month"
+        }
+      ],
+      "must_include": [
+        "second cycle 16-30/31",
+        "credited by the 15th of the next month",
+        "first cycle by the last working day"
+      ]
+    },
+    {
+      "id": "q07",
+      "question": "Can we hold a club event one week before mid-semester exams?",
+      "kind": "covered",
+      "expected_answer": "No. Students are prohibited from conducting on-campus events or participating in external events one week before the mid-semester examination and two weeks before the end-semester examination.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 7,
+          "quote": "prohibited from conducting any on-campus events or participating in any external events one week before the mid-semester examination and two weeks before the end-semester examination"
+        }
+      ],
+      "must_include": [
+        "no on-campus events one week before mid-semester exams",
+        "no external participation two weeks before end-semester exams"
+      ]
+    },
+    {
+      "id": "q08",
+      "question": "Which address and subject line do we use to claim a club event reimbursement?",
+      "kind": "covered",
+      "expected_answer": "Email ts.sc@snu.edu.in for club and society events; university-wide events go to karthika@snu.edu.in. The subject is 'Reimbursement || <Club Name> || <Event Name>'. Include the approval date, approved budget, amount spent, itemised expenses, bills, event report and account details, preferably the club treasurer's.",
+      "citations": [
+        {
+          "doc": "snu-reimb",
+          "page": 6,
+          "quote": "ts.sc@snu.edu.in (for clubs and societies events)"
+        },
+        {
+          "doc": "snu-reimb",
+          "page": 6,
+          "quote": "Subject: Reimbursement || <Club Name> || <Event Name>"
+        }
+      ],
+      "must_include": [
+        "ts.sc@snu.edu.in for club and society events",
+        "karthika@snu.edu.in for university-wide events",
+        "Reimbursement || <Club Name> || <Event Name>"
+      ]
+    },
+    {
+      "id": "q09",
+      "question": "Who approves a club's event budget request, in what order?",
+      "kind": "covered",
+      "expected_answer": "The Student Coordinator of the club raises the request with a budgetary proposal. The President of the council reviews it with the Faculty Coordinator of the club. The Faculty Coordinator forwards it to the SAC Coordinator, who forwards it to the FIC (Student Welfare) for forwarding to the Director of the institute.",
+      "citations": [
+        {
+          "doc": "iiitu-sac",
+          "page": 14,
+          "quote": "Student Co-ordinator of the club will raise the request for conducting the event along with budgetary proposal."
+        },
+        {
+          "doc": "iiitu-sac",
+          "page": 14,
+          "quote": "The SAC (Coordinator) forwards the request to FIC (SW) for forwarding to the Director of the institute."
+        }
+      ],
+      "must_include": [
+        "Student Coordinator raises the request",
+        "President reviews with Faculty Coordinator",
+        "Faculty Coordinator forwards to SAC Coordinator",
+        "SAC Coordinator forwards to FIC (SW)",
+        "FIC (SW) forwards to the Director"
+      ]
+    },
+    {
+      "id": "q10",
+      "question": "What must the Treasurer do before the club purchases or rents anything?",
+      "kind": "covered",
+      "expected_answer": "The Treasurer may purchase or rent only after a majority vote by the office bearers and approval from the competent authority. The Treasurer also keeps the society's financial records, reports the state of the account at each meeting, and assists in spending funds allocated to the society.",
+      "citations": [
+        {
+          "doc": "iiitu-sac",
+          "page": 12,
+          "quote": "Purchasing or renting anything needed by the club, after a majority vote by office bearers and approval from the competent authority."
+        },
+        {
+          "doc": "iiitu-sac",
+          "page": 12,
+          "quote": "Keeping a record of the finances of the society."
+        }
+      ],
+      "must_include": [
+        "majority vote by office bearers",
+        "approval from the competent authority",
+        "Treasurer keeps financial records"
+      ]
+    },
+    {
+      "id": "u01",
+      "question": "What is the maximum amount a club can be reimbursed for one event?",
+      "kind": "uncovered",
+      "expected_answer": "Refuse. Neither document sets a per-event cap. Say the amount is bounded by the approved budget and the approving authority, and point to the Secretary of Treasury or the Student Affairs Coordinator, with the Finance Department processing the claim.",
+      "citations": [],
+      "refusal": {
+        "must_refuse": true,
+        "suggested_office": "Secretary of Treasury / Student Affairs Coordinator; Finance Department",
+        "reason": "Both documents refer to an approved budget but state no maximum amount."
+      }
+    },
+    {
+      "id": "u02",
+      "question": "What penalty applies if we submit our bills after the seven-day deadline?",
+      "kind": "uncovered",
+      "expected_answer": "Refuse. The policy sets the seven-day deadline but names no penalty. Do not invent a percentage or a forfeiture rule. Point to the Associate Dean - Student Engagement or the Finance Department.",
+      "citations": [],
+      "refusal": {
+        "must_refuse": true,
+        "suggested_office": "Associate Dean - Student Engagement; Finance Department",
+        "reason": "The deadline is stated, the consequence of missing it is not."
+      }
+    },
+    {
+      "id": "u03",
+      "question": "At what GST rate are food stall bills taxed?",
+      "kind": "uncovered",
+      "expected_answer": "Refuse. The documents require a GST number on bills but give no tax rate. Do not guess 5%, 12% or 18%. Point to the Finance Department.",
+      "citations": [],
+      "refusal": {
+        "must_refuse": true,
+        "suggested_office": "Finance Department",
+        "reason": "The GST number requirement appears on snu-reimb page 7; no rate appears anywhere."
+      }
+    },
+    {
+      "id": "u04",
+      "question": "Can we claim alcohol served at a club event?",
+      "kind": "uncovered",
+      "expected_answer": "Refuse. Neither document mentions alcohol, so there is no basis to approve or deny a claim. Point to the Associate Dean - Student Engagement and the Finance Department.",
+      "citations": [],
+      "refusal": {
+        "must_refuse": true,
+        "suggested_office": "Associate Dean - Student Engagement; Finance Department",
+        "reason": "Silent in both documents."
+      }
+    },
+    {
+      "id": "u05",
+      "question": "Does the policy cover visa fees for an international conference?",
+      "kind": "uncovered",
+      "expected_answer": "Refuse. External participation covers registration fees and transport, but visa or passport fees are not mentioned. Point to the Associate Dean - Student Engagement and the Secretary of External Affairs.",
+      "citations": [],
+      "refusal": {
+        "must_refuse": true,
+        "suggested_office": "Associate Dean - Student Engagement; Secretary of External Affairs",
+        "reason": "External participation is covered on snu-reimb pages 6-7, visa fees are not."
+      }
+    }
+  ]
+}
