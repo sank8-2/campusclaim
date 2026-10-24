@@ -40,6 +40,11 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `tests/test_inference.py` | 14 unit tests for JSON parsing, the processor/generation calls and import safety. |
 | `tests/test_demo_pipeline.py` | 5 unit tests for the demo report. |
 | `.github/workflows/ci.yml` | CI on pushes and pull requests to `dev` and `main`. |
+| `scripts/fetch_rag_docs.py` | Downloads the two policy PDFs into the git-ignored `data/rag/source/` and verifies checksums. |
+| `scripts/check_rag_docs.py` | Checks that the policy PDFs are text-based, not scans. |
+| `docs/rag-documents.md` | The two shortlisted policy documents, their URLs and page map (pre-CP1). |
+| `docs/rag-eval.md` | The 15-question policy test (10 covered, 5 refusals). |
+| `data/rag/questions.json` | Machine-readable copy of the 15-question test. |
 | `docs/team-plan.md` | Roles, timeline, checkpoints, cut lines, rubric. |
 | `docs/colab-handoff.md` | How to run the notebook and hand results to M2–M5. |
 | `docs/results.md` | Settings, metrics and failure examples (filled during the run). |
@@ -53,6 +58,8 @@ python3 scripts/validate_notebook.py        # notebook syntax + frozen keys
 python3 -m unittest discover -s tests -v    # 40 tests, standard library only
 python3 scripts/demo_pipeline.py            # offline demo; writes results/demo_report.json
 python3 scripts/freeze_eval_sample.py       # rebuild data/ (network, no images)
+python3 scripts/fetch_rag_docs.py           # download the git-ignored policy PDFs
+python3 scripts/check_rag_docs.py           # pypdf: text-based check on those PDFs
 ```
 
 ## Status
