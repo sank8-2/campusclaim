@@ -10,7 +10,7 @@
 
 ## Backup clips
 
-- Baseline clip (plain extraction app): _add share link_
-- Final clip (plain + fine-tuned comparison): _add share link_
+- [ ] Baseline 2-minute clip (plain extraction app): _not recorded yet — add share link_
+- [ ] Final 2-minute clip (plain + fine-tuned comparison): _not recorded yet — add share link_
 
 Run the full live flow twice before showcase (CP2) and keep both backup links ready.
