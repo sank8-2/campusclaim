@@ -86,9 +86,14 @@ class GradioAppLogicTests(unittest.TestCase):
 
 
 class ServiceWiringTests(unittest.TestCase):
-    def test_default_args_return_the_dummy_service(self):
+    def test_default_extractor_is_ocr(self):
         args = _build_parser().parse_args([])
-        self.assertTrue(args.use_dummy)
+        self.assertEqual(args.extractor, "ocr")
+        self.assertEqual(_build_service_from_args(args).source, "ocr")
+
+    def test_use_dummy_alias_returns_the_dummy_service(self):
+        args = _build_parser().parse_args(["--use-dummy"])
+        self.assertEqual(args.extractor, "dummy")
 
         service = _build_service_from_args(args)
         plain, tuned = service.extract("image")
@@ -99,7 +104,7 @@ class ServiceWiringTests(unittest.TestCase):
 
     def test_no_dummy_without_model_and_adapter_raises(self):
         args = _build_parser().parse_args(["--no-dummy"])
-        self.assertFalse(args.use_dummy)
+        self.assertEqual(args.extractor, "model")
         with self.assertRaises(ValueError) as caught:
             _build_service_from_args(args)
         self.assertIn("--base-model-id", str(caught.exception))
