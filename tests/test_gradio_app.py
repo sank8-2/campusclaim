@@ -1,6 +1,11 @@
 import unittest
 
-from app.gradio_app import build_claim_draft, extract_and_prefill, make_dual_model_extractors
+from app.gradio_app import (
+    ReceiptFields,
+    build_claim_draft,
+    extract_and_prefill,
+    make_dual_model_extractors,
+)
 
 
 class _ModelStub:
@@ -42,6 +47,39 @@ class GradioAppLogicTests(unittest.TestCase):
         self.assertEqual(plain["company"], "ok")
         self.assertEqual(tuned["company"], "ok")
         self.assertEqual(model.calls, ["disable", "enable"])
+
+    def test_empty_image_returns_empty_fields(self):
+        class _Service:
+            def extract(self, _image):
+                raise AssertionError("must not call the model for an empty upload")
+
+        plain, tuned, company, date, address, total, draft = extract_and_prefill(None, _Service())
+        self.assertEqual((plain, tuned), ({}, {}))
+        self.assertEqual((company, date, address, total), ("", "", "", ""))
+        self.assertIn("Missing fields: company, date, address, total", draft)
+
+    def test_adapter_is_reenabled_when_inference_raises(self):
+        model = _ModelStub()
+
+        def infer_json(_model, _image):
+            raise RuntimeError("boom")
+
+        service = make_dual_model_extractors(model, infer_json)
+        with self.assertRaises(RuntimeError):
+            service.extract("image")
+        self.assertEqual(model.calls, ["disable", "enable"])
+
+    def test_from_json_handles_none_and_missing_fields(self):
+        self.assertEqual(ReceiptFields.from_json(None).as_tuple(), ("", "", "", ""))
+        self.assertEqual(
+            ReceiptFields.from_json({"company": None, "total": 12.5}).as_tuple(),
+            ("", "", "", "12.5"),
+        )
+
+    def test_claim_draft_lists_all_missing_fields(self):
+        draft = build_claim_draft("", "", "", "")
+        self.assertIn("[missing]", draft)
+        self.assertIn("Missing fields: company, date, address, total", draft)
 
 
 if __name__ == "__main__":

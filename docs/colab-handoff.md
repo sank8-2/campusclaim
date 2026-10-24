@@ -2,6 +2,8 @@
 
 The **shared Colab notebook is the submission**. `notebooks/campusclaim_3b.ipynb` in this repo is the versioned copy — do not treat the repo copy as the deliverable.
 
+Before uploading, run `python3 scripts/validate_notebook.py`. If a cell fails in Colab, check [troubleshooting.md](troubleshooting.md) before changing the notebook.
+
 ## M1: first run
 
 1. Open the [Theme 3 starter](https://colab.research.google.com/github/mithun-srinivas/HacktoberFest-HackDay/blob/main/templates/03_fine_tuning_starter_kit.ipynb), choose *File → Save a copy in Drive*, and rename it `CampusClaim 3B`.
