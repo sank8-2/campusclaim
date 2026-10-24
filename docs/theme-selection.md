@@ -1,5 +1,7 @@
 # Theme selection discussion
 
+> **Decision update (24 October 2026):** the team confirmed a **single-theme submission: Theme 3B**. Policy retrieval is kept only as the 3B *"combined approach"* bonus, and the Theme 1 four-model scorecard and the Laya decision layer are out of scope for the hack day. See [the team plan](team-plan.md) for roles, checkpoints and cut lines.
+
 ## Decision and motivation
 
 Build **CampusClaim**, a receipt-to-reimbursement assistant for student clubs and campus events. Select **Theme 3B: Receipt Information Extraction** as the primary submission, with components from **Theme 2A: Campus Regulations Assistant** and **Theme 1: Open Model Evaluation**.
