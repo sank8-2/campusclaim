@@ -48,6 +48,7 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `docs/team-plan.md` | Roles, timeline, checkpoints, cut lines, rubric. |
 | `docs/colab-handoff.md` | How to run the notebook and hand results to M2–M5. |
 | `docs/results.md` | Settings, metrics and failure examples (filled during the run). |
+| `docs/status.md` | Snapshot of what is built, verified, blocked and next. |
 | `docs/troubleshooting.md` | Common Colab failures and the OOM fallback. |
 
 ## Quick checks
