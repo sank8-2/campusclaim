@@ -1,0 +1,1 @@
+"""CampusClaim application package."""
