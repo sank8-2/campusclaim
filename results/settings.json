@@ -1,0 +1,13 @@
+{
+  "model": "unsloth/gemma-4-E2B-it",
+  "instruction": "Extract the company, date, address and total from this receipt. Reply with JSON only.",
+  "eval_keys": 100,
+  "eval_seed": 0,
+  "image_max_side": 1024,
+  "lora_rank": 16,
+  "train_steps": 120,
+  "learning_rate": 0.0002,
+  "batch_size": 1,
+  "grad_accum": 4,
+  "max_length": 2048
+}

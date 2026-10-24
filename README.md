@@ -36,6 +36,8 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `app/inference.py` | Notebook-mirroring inference adapter: `build_infer_fn` and `parse_receipt_json`. |
 | `app/gradio_app.py` | Standalone app. Local OCR by default; `--extractor dummy` or `--no-dummy` + adapter. |
 | `app/ocr_extract.py` | RapidOCR helpers for the fallback app (naive vs layout-aware parse). |
+| `adapters/campusclaim_gemma4_lora/` | Saved LoRA adapters from the Colab run (weights via Git LFS). |
+| `results/` | Baseline/tuned metrics, comparison, failures, settings from the Colab export. |
 | `tests/test_scoring.py` | 8 unit tests for the normalisers and scoring. |
 | `tests/test_gradio_app.py` | Unit tests for prefill, claim draft, adapter handling and CLI wiring. |
 | `tests/test_ocr_extract.py` | Unit tests for OCR field parsing. |
@@ -70,8 +72,8 @@ python3 scripts/check_rag_docs.py           # pypdf: text-based check on those P
 - [x] Team roles assigned in the [Hack Day 3B milestone](https://github.com/sank8-2/campusclaim/milestone/1)
 - [x] Frozen 100-receipt evaluation sample
 - [x] App real-inference path and offline demo pipeline (dummy mode verified locally)
-- [ ] Baseline on the frozen sample (Colab GPU)
-- [ ] LoRA fine-tune and comparison (Colab GPU)
+- [x] Baseline on the frozen sample (Colab GPU)
+- [x] LoRA fine-tune and comparison (Colab GPU)
 - [x] App screenshots and capture script (backup clips pending share links; re-record with the real adapter after CP1)
 - [ ] Policy RAG bonus (only after CP1)
 
