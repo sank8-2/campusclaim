@@ -39,9 +39,12 @@ class ReceiptExtractionService:
         self,
         plain_extractor: Callable[[Any], Dict[str, Any]],
         tuned_extractor: Callable[[Any], Dict[str, Any]],
+        *,
+        source: str = "model",
     ) -> None:
         self._plain_extractor = plain_extractor
         self._tuned_extractor = tuned_extractor
+        self.source = source
 
     def extract(self, image: Any) -> tuple[Dict[str, Any], Dict[str, Any]]:
         plain_payload = self._plain_extractor(image)
@@ -66,7 +69,27 @@ class ReceiptExtractionService:
                 "total": "431.50",
             }
 
-        return cls(dummy_plain, dummy_tuned)
+        return cls(dummy_plain, dummy_tuned, source="dummy")
+
+    @classmethod
+    def from_ocr(cls) -> "ReceiptExtractionService":
+        """Read the receipt locally with OCR (no model adapter required)."""
+        try:
+            from .ocr_extract import CachedOcr, parse_lines, parse_lines_naive
+        except ImportError:
+            from ocr_extract import CachedOcr, parse_lines, parse_lines_naive
+
+        cache = CachedOcr()
+
+        def plain_extractor(image: Any) -> Dict[str, Any]:
+            lines, _ = cache.lines(image)
+            return parse_lines_naive(lines)
+
+        def tuned_extractor(image: Any) -> Dict[str, Any]:
+            lines, height = cache.lines(image)
+            return parse_lines(lines, height)
+
+        return cls(plain_extractor, tuned_extractor, source="ocr")
 
 
 def make_dual_model_extractors(
@@ -87,7 +110,7 @@ def make_dual_model_extractors(
     def tuned_extractor(image: Any) -> Dict[str, Any]:
         return infer_json(model, image)
 
-    return ReceiptExtractionService(plain_extractor, tuned_extractor)
+    return ReceiptExtractionService(plain_extractor, tuned_extractor, source="model")
 
 
 def load_model_from_saved_adapter(
@@ -175,10 +198,27 @@ def extract_and_prefill(image: Any, service: ReceiptExtractionService):
 def build_app(service: Optional[ReceiptExtractionService] = None):
     import gradio as gr
 
-    service = service or ReceiptExtractionService.from_dummy()
+    service = service or ReceiptExtractionService.from_ocr()
+
+    if service.source == "ocr":
+        header = (
+            "## CampusClaim receipt extraction demo\n"
+            "Text is read from the uploaded receipt with local OCR. "
+            "Edit any field and the claim draft updates."
+        )
+        plain_label, tuned_label = "OCR baseline JSON", "OCR parsed JSON"
+    elif service.source == "dummy":
+        header = (
+            "## CampusClaim receipt extraction demo\n"
+            "Dummy mode: these values are placeholders, not read from the image."
+        )
+        plain_label, tuned_label = "Plain model JSON", "Fine-tuned model JSON"
+    else:
+        header = "## CampusClaim receipt extraction demo"
+        plain_label, tuned_label = "Plain model JSON", "Fine-tuned model JSON"
 
     with gr.Blocks(title="CampusClaim — Receipt Extractor") as demo:
-        gr.Markdown("## CampusClaim receipt extraction demo")
+        gr.Markdown(header)
 
         with gr.Row():
             receipt_image = gr.Image(type="pil", label="Upload receipt image")
@@ -187,8 +227,8 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
                 reset_button = gr.Button("Reset")
 
         with gr.Row():
-            plain_box = gr.JSON(label="Plain model JSON")
-            tuned_box = gr.JSON(label="Fine-tuned model JSON")
+            plain_box = gr.JSON(label=plain_label)
+            tuned_box = gr.JSON(label=tuned_label)
 
         company = gr.Textbox(label="Company", interactive=True)
         date = gr.Textbox(label="Date", interactive=True)
@@ -220,12 +260,15 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
 
 
 def _build_service_from_args(args: argparse.Namespace) -> ReceiptExtractionService:
-    if args.use_dummy:
+    extractor = getattr(args, "extractor", "ocr")
+    if extractor == "dummy":
         return ReceiptExtractionService.from_dummy()
+    if extractor == "ocr":
+        return ReceiptExtractionService.from_ocr()
 
     if not args.base_model_id or not args.adapter_path:
         raise ValueError(
-            "--no-dummy requires --base-model-id and --adapter-path "
+            "--extractor model requires --base-model-id and --adapter-path "
             "(the adapter directory saved by the notebook's final cell)"
         )
 
@@ -261,8 +304,29 @@ def _build_parser() -> argparse.ArgumentParser:
             "callable (model, image) -> dict. Defaults to the built-in adapter."
         ),
     )
-    parser.add_argument("--use-dummy", action="store_true", default=True)
-    parser.add_argument("--no-dummy", action="store_false", dest="use_dummy")
+    parser.add_argument(
+        "--extractor",
+        choices=["ocr", "dummy", "model"],
+        default="ocr",
+        help=(
+            "ocr reads the receipt locally (default); dummy shows placeholders; "
+            "model uses the saved adapter"
+        ),
+    )
+    parser.add_argument(
+        "--use-dummy",
+        dest="extractor",
+        action="store_const",
+        const="dummy",
+        help="alias for --extractor dummy",
+    )
+    parser.add_argument(
+        "--no-dummy",
+        dest="extractor",
+        action="store_const",
+        const="model",
+        help="alias for --extractor model (requires --base-model-id and --adapter-path)",
+    )
     return parser
 
 
