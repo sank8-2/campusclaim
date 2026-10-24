@@ -34,3 +34,25 @@ python3 -m unittest discover -s tests -v    # scoring tests
 - [ ] LoRA fine-tune and comparison
 - [ ] App and backup demo
 - [ ] Policy RAG bonus (only after CP1)
+
+## Gradio app (M3)
+
+Run the baseline skeleton app:
+
+```bash
+pip install -r requirements.txt
+python -m app.gradio_app
+```
+
+The default run mode uses dummy JSON so the upload → extract → edit → claim draft flow works immediately.
+
+To use a saved adapter state (instead of a live training session), start with:
+
+```bash
+python -m app.gradio_app --no-dummy --base-model-id <base-model> --adapter-path <saved-adapter-dir>
+```
+
+Then pass your project inference callable when launching from Python so plain extraction uses `model.disable_adapter()` and tuned extraction uses the active adapter.
+
+Screenshot checklist: `screenshots/README.md`  
+Demo and backup clip checklist: `docs/demo-script.md`
