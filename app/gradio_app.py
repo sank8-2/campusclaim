@@ -515,7 +515,7 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
             gr.Markdown(
                 f"""
                 <div class="hero">
-                  <p class="ht-eyebrow">Hacktoberfest 2026 &middot; October 1&ndash;31</p>
+                  <p class="ht-eyebrow">Team SnakeByte &middot; Hacktoberfest 2026 &middot; October 1&ndash;31</p>
                   <h1>CampusClaim <em>receipt extractor</em></h1>
                   <p class="ht-hero-copy">{hero_copy}</p>
                 </div>
@@ -562,7 +562,7 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
             )
 
             gr.Markdown(
-                '<div class="ht-footer">Built for <strong>Hacktoberfest 2026</strong> · CampusClaim receipt extraction</div>'
+                '<div class="ht-footer">Team <strong>SnakeByte</strong> · Built for <strong>Hacktoberfest 2026</strong> · CampusClaim receipt extraction</div>'
             )
 
         extract_button.click(
