@@ -177,25 +177,83 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
 
     service = service or ReceiptExtractionService.from_dummy()
 
-    with gr.Blocks(title="CampusClaim — Receipt Extractor") as demo:
-        gr.Markdown("## CampusClaim receipt extraction demo")
+    css = """
+    #app-shell {
+        max-width: 1160px;
+        margin: 0 auto;
+    }
+    .hero h1 {
+        margin: 0;
+        font-size: 2rem;
+    }
+    .hero p {
+        margin: 0.5rem 0 0;
+        opacity: 0.9;
+    }
+    .section-title {
+        margin: 0.25rem 0 0.75rem;
+        font-weight: 700;
+    }
+    """
 
-        with gr.Row():
-            receipt_image = gr.Image(type="pil", label="Upload receipt image")
-            with gr.Column():
-                extract_button = gr.Button("Extract")
-                reset_button = gr.Button("Reset")
+    theme = gr.themes.Soft(
+        primary_hue="blue",
+        secondary_hue="slate",
+        neutral_hue="slate",
+    )
 
-        with gr.Row():
-            plain_box = gr.JSON(label="Plain model JSON")
-            tuned_box = gr.JSON(label="Fine-tuned model JSON")
+    with gr.Blocks(
+        title="CampusClaim — Receipt Extractor",
+        theme=theme,
+        css=css,
+    ) as demo:
+        with gr.Column(elem_id="app-shell"):
+            gr.Markdown(
+                """
+                <div class="hero">
+                  <h1>CampusClaim</h1>
+                  <p>Upload a receipt, compare plain vs fine-tuned extraction, then finalize a claim draft.</p>
+                </div>
+                """
+            )
+            with gr.Row():
+                with gr.Column(scale=5):
+                    gr.Markdown('<div class="section-title">Receipt upload</div>')
+                    receipt_image = gr.Image(
+                        type="pil",
+                        label="Receipt image",
+                        height=360,
+                    )
+                with gr.Column(scale=3):
+                    gr.Markdown('<div class="section-title">Actions</div>')
+                    extract_button = gr.Button("Extract fields", variant="primary")
+                    reset_button = gr.Button("Reset", variant="secondary")
+                    gr.Markdown(
+                        "Fine-tuned JSON pre-fills editable fields. Edit any value to refresh the draft instantly."
+                    )
 
-        company = gr.Textbox(label="Company", interactive=True)
-        date = gr.Textbox(label="Date", interactive=True)
-        address = gr.Textbox(label="Address", interactive=True)
-        total = gr.Textbox(label="Total", interactive=True)
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown('<div class="section-title">Plain model output</div>')
+                    plain_box = gr.JSON(label="Plain model JSON")
+                with gr.Column():
+                    gr.Markdown('<div class="section-title">Fine-tuned model output</div>')
+                    tuned_box = gr.JSON(label="Fine-tuned model JSON")
 
-        claim_draft = gr.Textbox(label="Claim draft", lines=8, interactive=False)
+            gr.Markdown('<div class="section-title">Editable claim fields</div>')
+            with gr.Row():
+                company = gr.Textbox(label="Company", interactive=True, placeholder="Company name")
+                date = gr.Textbox(label="Date", interactive=True, placeholder="YYYY-MM-DD")
+            with gr.Row():
+                address = gr.Textbox(label="Address", interactive=True, placeholder="Receipt address")
+                total = gr.Textbox(label="Total", interactive=True, placeholder="Amount")
+
+            claim_draft = gr.Textbox(
+                label="Claim draft",
+                lines=10,
+                interactive=False,
+                show_copy_button=True,
+            )
 
         extract_button.click(
             fn=lambda image: extract_and_prefill(image, service),
