@@ -2,8 +2,11 @@ import unittest
 
 from app.gradio_app import (
     ReceiptFields,
+    _build_parser,
+    _build_service_from_args,
     build_claim_draft,
     extract_and_prefill,
+    load_inference_factory,
     make_dual_model_extractors,
 )
 
@@ -80,6 +83,54 @@ class GradioAppLogicTests(unittest.TestCase):
         draft = build_claim_draft("", "", "", "")
         self.assertIn("[missing]", draft)
         self.assertIn("Missing fields: company, date, address, total", draft)
+
+
+class ServiceWiringTests(unittest.TestCase):
+    def test_default_args_return_the_dummy_service(self):
+        args = _build_parser().parse_args([])
+        self.assertTrue(args.use_dummy)
+
+        service = _build_service_from_args(args)
+        plain, tuned = service.extract("image")
+
+        self.assertEqual(plain["date"], "")
+        self.assertEqual(tuned["date"], "2026-10-24")
+        self.assertEqual(tuned["total"], "431.50")
+
+    def test_no_dummy_without_model_and_adapter_raises(self):
+        args = _build_parser().parse_args(["--no-dummy"])
+        self.assertFalse(args.use_dummy)
+        with self.assertRaises(ValueError) as caught:
+            _build_service_from_args(args)
+        self.assertIn("--base-model-id", str(caught.exception))
+        self.assertIn("--adapter-path", str(caught.exception))
+
+    def test_no_dummy_requires_both_model_and_adapter(self):
+        args = _build_parser().parse_args(
+            ["--no-dummy", "--base-model-id", "unsloth/gemma-4-E2B-it"]
+        )
+        with self.assertRaises(ValueError):
+            _build_service_from_args(args)
+
+    def test_inference_module_accepts_module_colon_function(self):
+        args = _build_parser().parse_args(
+            [
+                "--no-dummy",
+                "--base-model-id",
+                "unsloth/gemma-4-E2B-it",
+                "--adapter-path",
+                "campusclaim_gemma4_lora",
+                "--inference-module",
+                "my_project.inference:build",
+            ]
+        )
+        self.assertEqual(args.inference_module, "my_project.inference:build")
+
+    def test_inference_module_spec_must_be_module_colon_function(self):
+        for spec in ("my_project.inference", ":build", "my_project.inference:"):
+            with self.subTest(spec=spec):
+                with self.assertRaises(ValueError):
+                    load_inference_factory(spec)
 
 
 if __name__ == "__main__":

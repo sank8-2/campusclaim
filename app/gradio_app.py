@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+from importlib import import_module
 from typing import Any, Callable, Dict, Optional
+
+try:  # `python -m app.gradio_app` and the tests import the package
+    from .inference import INSTRUCTION, build_infer_fn
+except ImportError:  # `python app/gradio_app.py`
+    from inference import INSTRUCTION, build_infer_fn
 
 REQUIRED_FIELDS = ("company", "date", "address", "total")
 
@@ -100,6 +106,29 @@ def load_model_from_saved_adapter(
     return PeftModel.from_pretrained(base_model, adapter_path)
 
 
+def load_processor(base_model_id: str):
+    from transformers import AutoProcessor
+
+    return AutoProcessor.from_pretrained(base_model_id)
+
+
+def load_inference_factory(
+    spec: str,
+) -> Callable[[Any, Any], Callable[[Any, Any], Dict[str, Any]]]:
+    """Resolve ``module:function`` into a factory called with ``(model, processor)``."""
+    module_name, separator, attribute = spec.partition(":")
+    if not separator or not module_name or not attribute:
+        raise ValueError(
+            f"--inference-module must look like 'module:function', got {spec!r}"
+        )
+
+    module = import_module(module_name)
+    factory = getattr(module, attribute, None)
+    if not callable(factory):
+        raise ValueError(f"{spec!r} does not resolve to a callable factory")
+    return factory
+
+
 def build_claim_draft(company: str, date: str, address: str, total: str) -> str:
     values = {
         "company": (company or "").strip(),
@@ -195,31 +224,50 @@ def _build_service_from_args(args: argparse.Namespace) -> ReceiptExtractionServi
         return ReceiptExtractionService.from_dummy()
 
     if not args.base_model_id or not args.adapter_path:
-        raise ValueError("base_model_id and adapter_path are required when --use-dummy is false")
+        raise ValueError(
+            "--no-dummy requires --base-model-id and --adapter-path "
+            "(the adapter directory saved by the notebook's final cell)"
+        )
 
     model = load_model_from_saved_adapter(args.base_model_id, args.adapter_path)
+    processor = load_processor(args.base_model_id)
 
-    def infer_json(loaded_model: Any, image: Any) -> Dict[str, Any]:
-        if callable(args.infer_fn):
-            return args.infer_fn(loaded_model, image)
-        raise RuntimeError(
-            "Pass a callable infer_fn in code when using real model wiring. "
-            "The CLI path supports app bootstrapping only."
-        )
+    inference_module = getattr(args, "inference_module", None)
+    if inference_module:
+        factory = load_inference_factory(inference_module)
+        infer_json = factory(model, processor)
+        if not callable(infer_json):
+            raise ValueError(
+                f"--inference-module {inference_module!r} did not return a callable"
+            )
+    else:
+        infer_json = build_infer_fn(model, processor, INSTRUCTION)
 
     return make_dual_model_extractors(model, infer_json)
 
 
-def main() -> None:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="CampusClaim Gradio app")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=7860)
     parser.add_argument("--base-model-id", default=None)
     parser.add_argument("--adapter-path", default=None)
+    parser.add_argument(
+        "--inference-module",
+        default=None,
+        metavar="MODULE:FUNCTION",
+        help=(
+            "Factory called with (model, processor) that returns a "
+            "callable (model, image) -> dict. Defaults to the built-in adapter."
+        ),
+    )
     parser.add_argument("--use-dummy", action="store_true", default=True)
     parser.add_argument("--no-dummy", action="store_false", dest="use_dummy")
-    parser.set_defaults(infer_fn=None)
+    return parser
 
+
+def main() -> None:
+    parser = _build_parser()
     args = parser.parse_args()
     service = _build_service_from_args(args)
     app = build_app(service)
