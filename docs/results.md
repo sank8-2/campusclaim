@@ -14,9 +14,12 @@ Status: **pending**. M1 records the run settings; M2 fills the metrics and failu
 | Batch / gradient accumulation | 1 / 4 |
 | Learning rate | 2e-4 |
 | Max sequence length | 2048 |
-| Image max side | 1600 px |
+| Image max side | 1024 px |
+| Training rows | 625 usable of 626 train receipts |
 | Evaluation sample | 100 frozen test receipts, seed 0 (`data/eval_keys_seed0.json`) |
 | GPU | Colab free T4 |
+
+On a T4, Unsloth runs Gemma 4 in float32 because float16 produces NaN gradients. That is expected; the baseline and fine-tuned runs use the same setting, so the comparison is still like-for-like. It is also why the image side is 1024 px and the batch size is 1.
 
 ## Metrics
 
