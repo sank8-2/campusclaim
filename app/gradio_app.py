@@ -528,6 +528,9 @@ def build_app(service: Optional[ReceiptExtractionService] = None):
                         type="pil",
                         label="Receipt image",
                         height=360,
+                        # Gradio mirrors webcams by default (selfie mode). Receipts
+                        # must stay unflipped so text and OCR stay readable.
+                        webcam_options=gr.WebcamOptions(mirror=False),
                     )
                 with gr.Column(scale=3):
                     gr.Markdown('<div class="section-title">Actions</div>')
