@@ -30,6 +30,7 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `data/demo_receipt.json` | Label-only receipt fixture for the offline demo (no image data). |
 | `scripts/freeze_eval_sample.py` | Regenerates the manifest and the frozen sample from the HF rows API. |
 | `scripts/score.py` | Field-level scoring used by the notebook and the tests. |
+| `scripts/build_results.py` | Recomputes the metrics and rewrites `docs/results.md` from the notebook's `results/` folder. |
 | `scripts/validate_notebook.py` | Pre-flight: compiles the notebook and checks the frozen keys and required cells. |
 | `scripts/demo_pipeline.py` | Offline dummy run: extract → prefill → claim draft → `results/demo_report.json`. |
 | `scripts/check.sh` | Runs the validator and the test suite from the repo root (same as CI). |
@@ -39,6 +40,7 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 | `tests/test_gradio_app.py` | 12 unit tests for prefill, claim draft, adapter handling and CLI wiring. |
 | `tests/test_inference.py` | 14 unit tests for JSON parsing, the processor/generation calls and import safety. |
 | `tests/test_demo_pipeline.py` | 5 unit tests for the demo report. |
+| `tests/test_notebook_scoring.py` | Runs the notebook's own scoring cell on the four M2 cases, so it cannot drift from `scripts/score.py`. |
 | `.github/workflows/ci.yml` | CI on pushes and pull requests to `dev` and `main`. |
 | `scripts/fetch_rag_docs.py` | Downloads the two policy PDFs into the git-ignored `data/rag/source/` and verifies checksums. |
 | `scripts/check_rag_docs.py` | Checks that the policy PDFs are text-based, not scans. |
@@ -55,9 +57,10 @@ The GPU cells (install, model load, LoRA training, evaluation, the notebook's Gr
 ```bash
 bash scripts/check.sh                       # validator + tests (the same commands CI runs)
 python3 scripts/validate_notebook.py        # notebook syntax + frozen keys
-python3 -m unittest discover -s tests -v    # 40 tests, standard library only
+python3 -m unittest discover -s tests -v    # 53 tests, standard library only
 python3 scripts/demo_pipeline.py            # offline demo; writes results/demo_report.json
 python3 scripts/freeze_eval_sample.py       # rebuild data/ (network, no images)
+python3 scripts/build_results.py --results results   # verify + rewrite docs/results.md
 python3 scripts/fetch_rag_docs.py           # download the git-ignored policy PDFs
 python3 scripts/check_rag_docs.py           # pypdf: text-based check on those PDFs
 ```

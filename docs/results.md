@@ -2,6 +2,15 @@
 
 Status: **pending**. M1 records the run settings; M2 fills the metrics and failures from the notebook's `results/` folder.
 
+M2 does not type these numbers by hand. Once `results/` is in the repo root:
+
+```bash
+python3 scripts/build_results.py --results results          # rewrites this file
+python3 scripts/build_results.py --results results --check  # verify only
+```
+
+The script recomputes every metric from `baseline_predictions.csv` and `tuned_predictions.csv` with `scripts/score.py`, and refuses to write when the recomputed numbers disagree with `comparison.csv`/`*_metrics.json`, when the two runs did not use the same frozen 100 keys, or when a key is outside `data/eval_keys_seed0.json`.
+
 ## Run settings
 
 | Setting | Value |
@@ -29,15 +38,28 @@ Status: **pending**. M1 records the run settings; M2 fills the metrics and failu
 | Total exact | — | — | — |
 | Address token-F1 | — | — | — |
 
-Copy the numbers from `results/comparison.csv`. Do not round differently from the notebook.
+Filled by `scripts/build_results.py` from the raw predictions. Do not round differently from the notebook.
+
+## Scoring verification
+
+The scoring cell was checked on the four cases the issue asks for:
+
+| Case | Expected result | Test |
+|---|---|---|
+| Perfect JSON | all fields 1 | `test_perfect_json_scores_every_field` |
+| Normalised (case / `RM` / date format) | all fields 1 | `test_case_currency_and_date_format_are_normalised` |
+| Wrong fields | all fields 0 | `test_wrong_fields_score_zero` |
+| Prose, no JSON | `valid_json` 0 and all fields 0 | `test_prose_is_invalid_json` |
+
+`tests/test_notebook_scoring.py` runs the same four cases against the notebook's own scoring cell, so the copy in `scripts/score.py` cannot drift from what Colab executes.
 
 ## Failure examples
 
-| Receipt key | Expected | Predicted | Cause |
-|---|---|---|---|
-| — | — | — | — |
+| Receipt key | Wrong fields (expected → predicted) | Cause |
+|---|---|---|
+| — | — | — |
 
-Pick five from `results/failures.csv` and name the cause (blur, crop, currency, date format, hallucinated total, missing line item).
+Built from the same predictions: five receipts with at least one wrong field, and a cause (blur, crop, currency, date format, hallucinated total, missing line item).
 
 ## Local campus receipts
 
